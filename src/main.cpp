@@ -2,14 +2,15 @@
 #include "Globals.h"
 #include "Heartbeat.h"
 #include "LEDPulse.h"
+#include "PatternProcessor.h"
 #include <Arduino.h>
 
 const unsigned int FreqStart = 300;
 const unsigned int FreqEnd = 600;
 const unsigned int PauseTimeUS = 3000;
 
-tHeartbeat<13, 1000> heartbeat;
-tLEDPulse<10, 2000> ledPulse;
+tHeartbeat<13, 1000> heartbeat{};
+tLEDPulse<10, 2000> ledPulse{};
 tButton<11> button{};
 
 // TODO: On startup, flash the main button LED and beep twice, along with the
@@ -18,11 +19,32 @@ tButton<11> button{};
 
 // Buzzer is dio 3.
 
+struct tStartupPattern {
+  bool value;
+  long unsigned timeMS;
+};
+
+const tStartupPattern StartupPattern[] = {
+    {true, 500},
+    {false, 500},
+    {true, 500},
+    {false, 500},
+};
+
+#define ArrayItemCount(a, item) (sizeof(a) / sizeof(item))
+
 void setup()
 {
   Serial.begin(115200);
   Serial.print("OctoAlarm Version ");
   Serial.println(Globals::Version);
+
+  tPatternProcessor<tStartupPattern> startupProcessor(
+      StartupPattern, ArrayItemCount(StartupPattern, tStartupPattern));
+
+  while (!startupProcessor.IsFinished()) {
+    startupProcessor.Update([](bool value) { digitalWrite(10, value); });
+  }
 
   ledPulse.SetConstantBrightness(50);
 
