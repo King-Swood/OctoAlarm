@@ -23,6 +23,8 @@ void setup()
   Serial.print("OctoAlarm Version ");
   Serial.println(Globals::Version);
 
+  ledPulse.Start();
+
   //   digitalWrite(10, true);
   //   pinMode(10, OUTPUT);
 
