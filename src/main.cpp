@@ -4,17 +4,18 @@
 #include "LEDPulse.h"
 #include <Arduino.h>
 
-const int ButtonPin = 2;
-
-const int BeeperPin = 9;
 const unsigned int FreqStart = 300;
 const unsigned int FreqEnd = 600;
 const unsigned int PauseTimeUS = 3000;
 
 tHeartbeat<13, 1000> heartbeat;
 tLEDPulse<10, 2000> ledPulse;
+tButton<11> button{};
 
-// ButtonLED is dio 10.
+// TODO: On startup, flash the main button LED and beep twice, along with the
+// heartbeat LED. Then set the Button LED to 50% brightness, and flash the
+// heartbeat consistently.
+
 // Buzzer is dio 3.
 
 void setup()
@@ -23,17 +24,13 @@ void setup()
   Serial.print("OctoAlarm Version ");
   Serial.println(Globals::Version);
 
-  ledPulse.Start();
-
-  //   digitalWrite(10, true);
-  //   pinMode(10, OUTPUT);
+  ledPulse.SetConstantBrightness(50);
 
   //   pinMode(3, OUTPUT);
   //   tone(3, 1000);
 }
 
 unsigned int currentFreq = FreqStart;
-tButton button{ButtonPin};
 bool running{};
 bool lastRunning{};
 
@@ -41,6 +38,18 @@ void loop()
 {
   heartbeat.Update();
   ledPulse.Update();
+  button.Update();
+
+  if (button.JustPressed()) {
+    if (!running) {
+      running = true;
+      ledPulse.Start();
+    }
+    else {
+      running = false;
+      ledPulse.Stop();
+    }
+  }
   //   lastRunning = running;
   //   button.Update();
   //   if (button.JustPressed()) {

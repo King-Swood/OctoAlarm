@@ -11,6 +11,11 @@ public:
 
   void Start() { start_ = true; }
   void Stop() { stop_ = true; }
+  void SetConstantBrightness(unsigned pwmValue)
+  {
+    stop_ = true;
+    constantPWMValue_ = pwmValue;
+  }
 
   void Update()
   {
@@ -32,7 +37,7 @@ public:
     case eState::Off:
       if (firstTime) {
         pwmValue_ = 0;
-        analogWrite(PIN, 0);
+        analogWrite(PIN, constantPWMValue_);
       }
       break;
     case eState::Increasing:
@@ -91,6 +96,7 @@ private:
   static constexpr auto PauseBrightUS = UpdatePeriodUS * 100;
   static constexpr auto PauseOffUS = UpdatePeriodUS * 100;
   unsigned pwmValue_{};
+  unsigned constantPWMValue_{};
   long unsigned lastTimeUS_{micros()};
   enum eState { Off, Increasing, PauseBright, Decreasing, PauseOff, Size };
   eState state_{};
