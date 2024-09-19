@@ -31,8 +31,10 @@ void StartupPatternBlocking()
   using tStartupPatternItem = tPatternItem<tStartupPatternValue>;
 
   static const tStartupPatternItem StartupPattern[] = {
-      {{true, 500}, 500},   {{false, 1000}, 500}, {{true, 500}, 500},
-      {{false, 1000}, 500}, {{false, 0}, 0},
+      {{true, 1000}, 50},
+      {{false, 0}, 50},
+      {{true, 1000}, 50},
+      {{false, 0}, 500},
   };
 
   tPatternProcessor<tStartupPatternItem> startupProcessor(
@@ -45,7 +47,7 @@ void StartupPatternBlocking()
         noTone(BeeperPin);
       }
       else {
-        tone(BeeperPin, value.beeperFreq);
+        // tone(BeeperPin, value.beeperFreq);
       }
     });
   }

@@ -35,7 +35,8 @@ public:
         finished_ = true;
       }
       else {
-        onNewState(currentItem.value);
+        const auto &nextItem = data_[index_];
+        onNewState(nextItem.value);
       }
     }
   }
