@@ -3,13 +3,10 @@
 #include "Heartbeat.h"
 #include "LEDPulse.h"
 #include "PatternProcessor.h"
+#include "Siren.h"
 #include <Arduino.h>
 
 namespace {
-constexpr unsigned int FreqStart = 300;
-constexpr unsigned int FreqEnd = 600;
-constexpr unsigned int PauseTimeUS = 3000;
-
 constexpr int HeartbeatLEDPin = 13;
 constexpr int ButtonLEDPin = 10;
 constexpr int ButtonPin = 11;
@@ -18,12 +15,12 @@ constexpr int BeeperPin = 3;
 tHeartbeat<HeartbeatLEDPin, 1000> heartbeat{};
 tLEDPulse<ButtonLEDPin, 2000> ledPulse{};
 tButton<ButtonPin> button{};
+tSiren<BeeperPin, 3000> siren{};
 
 #define ArrayItemCount(a, item) (sizeof(a) / sizeof(item))
 
 void StartupPatternBlocking()
 {
-
   struct tStartupPatternValue {
     bool ledState;
     int beeperFreq;
@@ -47,7 +44,7 @@ void StartupPatternBlocking()
         noTone(BeeperPin);
       }
       else {
-        // tone(BeeperPin, value.beeperFreq);
+        tone(BeeperPin, value.beeperFreq);
       }
     });
   }
@@ -65,7 +62,6 @@ void setup()
   ledPulse.SetConstantBrightness(50);
 }
 
-unsigned int currentFreq = FreqStart;
 bool running{};
 bool lastRunning{};
 
@@ -74,38 +70,18 @@ void loop()
   heartbeat.Update();
   ledPulse.Update();
   button.Update();
+  siren.Update();
 
   if (button.JustPressed()) {
     if (!running) {
       running = true;
       ledPulse.Start();
+      siren.Start();
     }
     else {
       running = false;
       ledPulse.Stop();
+      siren.Stop();
     }
   }
-  //   lastRunning = running;
-  //   button.Update();
-  //   if (button.JustPressed()) {
-  //     running = !running;
-  //   }
-
-  //   if (lastRunning != running) {
-  //     if (running) {
-  //       currentFreq = FreqStart;
-  //     }
-  //   }
-
-  //   if (running) {
-  //     if (currentFreq > FreqEnd) {
-  //       currentFreq = FreqStart;
-  //     }
-  //     tone(BeeperPin, currentFreq);
-  //     currentFreq++;
-  //     delayMicroseconds(PauseTimeUS);
-  //   }
-  //   else {
-  //     noTone(BeeperPin);
-  //   }
 }

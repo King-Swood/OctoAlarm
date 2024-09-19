@@ -2,5 +2,5 @@
 
 class Globals {
 public:
-  static constexpr auto Version = "0.001";
+  static constexpr auto Version = "0.010";
 };
