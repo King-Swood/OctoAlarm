@@ -4,6 +4,7 @@
 #include "LEDPulse.h"
 #include "PatternProcessor.h"
 #include "Siren.h"
+#include "Theme.h"
 #include <Arduino.h>
 
 namespace {
@@ -17,8 +18,7 @@ tHeartbeat<HeartbeatLEDPin, 1000> heartbeat{};
 tLEDPulse<ButtonLEDPin, 2000> ledPulse{};
 tButton<ButtonPin> button{};
 tSiren<BeeperPin, 3000> siren{};
-
-#define ArrayItemCount(a, item) (sizeof(a) / sizeof(item))
+tThemePlayer<BeeperPin> themePlayer{};
 
 void StartupPatternBlocking()
 {
@@ -67,6 +67,7 @@ enum class eState { Idle, Alarming, Theme, Size };
 
 eState state_{};
 eState lastState_{eState::Size};
+bool releasedInThemeState_{};
 
 void loop()
 {
@@ -102,26 +103,25 @@ void loop()
         break;
     case eState::Theme:
         if (firstTime) {
+            releasedInThemeState_ = false;
+            themePlayer = {};
         }
-        // TODO: Need to ignore the first release, as this is from the hold...
-        if (button.JustReleased()) {
+
+        themePlayer.Update();
+
+        if (themePlayer.IsFinished()) {
             state_ = eState::Idle;
+        }
+        else if (button.JustReleased()) {
+            if (!releasedInThemeState_) {
+                releasedInThemeState_ = true;
+            }
+            else {
+                state_ = eState::Idle;
+            }
         }
         break;
     case eState::Size:
         break;
     }
-
-    // if (button.JustPressed()) {
-    //     if (!running) {
-    //         running = true;
-    //         ledPulse.Start();
-    //         siren.Start();
-    //     }
-    //     else {
-    //         running = false;
-    //         ledPulse.Stop();
-    //         siren.Stop();
-    //     }
-    // }
 }
