@@ -1,24 +1,24 @@
 #pragma once
+#include "Elapsed.h"
 #include <Arduino.h>
 
 template <unsigned PIN, long unsigned Period> class tHeartbeat {
-public:
-  tHeartbeat()
-  {
-    pinMode(PIN, OUTPUT);
-    digitalWrite(PIN, false);
-  }
-
-  void Update()
-  {
-    if ((millis() - lastTimeMS_) >= Period) {
-      lastTimeMS_ = millis();
-      state_ = !state_;
-      digitalWrite(PIN, state_);
+  public:
+    tHeartbeat()
+    {
+        pinMode(PIN, OUTPUT);
+        digitalWrite(PIN, false);
     }
-  }
 
-private:
-  bool state_{};
-  long unsigned lastTimeMS_{millis()};
+    void Update()
+    {
+        if (lastTimeMS_.HasElapsedRestart(Period)) {
+            state_ = !state_;
+            digitalWrite(PIN, state_);
+        }
+    }
+
+  private:
+    bool state_{};
+    tElapsedMS lastTimeMS_{};
 };
