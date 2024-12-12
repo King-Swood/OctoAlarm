@@ -1,5 +1,6 @@
 #pragma once
 #include "Debounce.h"
+#include "Elapsed.h"
 #include <Arduino.h>
 
 template <int PIN> class tButton {
@@ -12,7 +13,7 @@ template <int PIN> class tButton {
     bool JustReleased() const { return JustChanged() && IsReleased(); }
     bool IsHeld(long unsigned holdTimeMS) const
     {
-        return pressed_ && (((millis() - pressTimeMS_) >= holdTimeMS));
+        return pressed_ && pressedTimeMS_.HasElapsed(holdTimeMS);
     }
     void Update()
     {
@@ -20,13 +21,13 @@ template <int PIN> class tButton {
         debouncedInput_.Update(!digitalRead(PIN));
         pressed_ = debouncedInput_.State();
         if (JustPressed()) {
-            pressTimeMS_ = millis();
+            pressedTimeMS_.Restart();
         }
     }
 
   private:
     tDebounce<bool, 50> debouncedInput_;
-    long unsigned pressTimeMS_{};
+    tElapsedMS pressedTimeMS_{};
     bool pressed_{};
     bool lastPressed_{};
 };
