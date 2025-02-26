@@ -1,6 +1,6 @@
 #pragma once
 #include "Elapsed.h"
-#include <Arduino.h>
+#include "HAL.h"
 
 template <typename T> struct tPatternItem {
     T value;

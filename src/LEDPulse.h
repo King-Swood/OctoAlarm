@@ -1,6 +1,6 @@
 #pragma once
 #include "Elapsed.h"
-#include <Arduino.h>
+#include "HAL.h"
 
 template <unsigned PIN, long unsigned UpdatePeriodUS> class tLEDPulse {
   public:

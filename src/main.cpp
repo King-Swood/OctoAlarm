@@ -1,11 +1,11 @@
 #include "Button.h"
 #include "Globals.h"
+#include "HAL.h"
 #include "Heartbeat.h"
 #include "LEDPulse.h"
 #include "PatternProcessor.h"
 #include "Siren.h"
 #include "Theme.h"
-#include <Arduino.h>
 
 namespace {
 constexpr int HeartbeatLEDPin = 13;
@@ -54,9 +54,10 @@ void StartupPatternBlocking()
 
 void setup()
 {
-    Serial.begin(115200);
-    Serial.print("OctoAlarm Version ");
-    Serial.println(Globals::Version);
+    ConsoleInit();
+    ConsolePrint("OctoAlarm Version ");
+    ConsolePrint(Globals::Version);
+    ConsolePrint("\n");
 
     StartupPatternBlocking();
 

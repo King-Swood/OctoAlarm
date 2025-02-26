@@ -1,7 +1,7 @@
 #pragma once
 #include "Debounce.h"
 #include "Elapsed.h"
-#include <Arduino.h>
+#include "HAL.h"
 
 template <int PIN> class tButton {
   public:

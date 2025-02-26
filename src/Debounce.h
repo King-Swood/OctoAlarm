@@ -1,6 +1,6 @@
 #pragma once
+#include "HAL.h"
 #include "Elapsed.h"
-#include <Arduino.h>
 
 template <typename T, long unsigned DebounceTimeMS> class tDebounce {
   public:
