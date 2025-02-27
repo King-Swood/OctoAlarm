@@ -6,7 +6,7 @@
 #include "Globals.h"
 #include <TonePitch.h>
 
-template <unsigned BeeperPin> class tThemePlayer {
+class tThemePlayer {
   private:
     using tMelodyNote = tPatternItem<unsigned int>;
 
@@ -142,10 +142,10 @@ template <unsigned BeeperPin> class tThemePlayer {
     {
         melodyProcessor.Update([](unsigned value) {
             if (value == 0) {
-                noTone(BeeperPin);
+                HALToneStop();
             }
             else {
-                tone(BeeperPin, value);
+                HALToneStart(value);
             }
         });
     }

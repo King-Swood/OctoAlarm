@@ -8,17 +8,13 @@
 #include "Theme.h"
 
 namespace {
-constexpr int HeartbeatLEDPin = 13;
-constexpr int ButtonLEDPin = 10;
-constexpr int ButtonPin = 11;
-constexpr int BeeperPin = 3;
 constexpr long unsigned ButtonHoldMS = 1000;
 
-tHeartbeat<HeartbeatLEDPin, 1000> heartbeat{};
-tLEDPulse<ButtonLEDPin, 2000> ledPulse{};
-tButton<ButtonPin> button{};
-tSiren<BeeperPin, 3000> siren{};
-tThemePlayer<BeeperPin> themePlayer{};
+tHeartbeat<eDigitalOutput::HeartbeatLED, 1000> heartbeat{};
+tLEDPulse<eAnalogOutput::AlarmLED, 2000> ledPulse{};
+tButton<eDigitalInput::AlarmButton> button{};
+tSiren<3000> siren{};
+tThemePlayer themePlayer{};
 
 void StartupPatternBlocking()
 {
@@ -40,12 +36,12 @@ void StartupPatternBlocking()
 
     while (!startupProcessor.IsFinished()) {
         startupProcessor.Update([](const tStartupPatternValue &value) {
-            digitalWrite(ButtonLEDPin, value.ledState);
+            HALDigitalWrite(eDigitalOutput::HeartbeatLED, value.ledState);
             if (value.beeperFreq == 0) {
-                noTone(BeeperPin);
+                HALToneStop();
             }
             else {
-                tone(BeeperPin, value.beeperFreq);
+                HALToneStart(value.beeperFreq);
             }
         });
     }
@@ -54,10 +50,9 @@ void StartupPatternBlocking()
 
 void setup()
 {
-    ConsoleInit();
-    ConsolePrint("OctoAlarm Version ");
-    ConsolePrint(Globals::Version);
-    ConsolePrint("\n");
+    HALConsolePrint("OctoAlarm Version ");
+    HALConsolePrint(Globals::Version);
+    HALConsolePrint("\n");
 
     StartupPatternBlocking();
 

@@ -2,19 +2,15 @@
 #include "Elapsed.h"
 #include "HAL.h"
 
-template <unsigned PIN, long unsigned Period> class tHeartbeat {
+template <eDigitalOutput Output, long unsigned Period> class tHeartbeat {
   public:
-    tHeartbeat()
-    {
-        pinMode(PIN, OUTPUT);
-        digitalWrite(PIN, false);
-    }
+    tHeartbeat() { HALDigitalWrite(Output, false); }
 
     void Update()
     {
         if (lastTimeMS_.HasElapsedRestart(Period)) {
             state_ = !state_;
-            digitalWrite(PIN, state_);
+            HALDigitalWrite(Output, state_);
         }
     }
 

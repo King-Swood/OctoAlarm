@@ -1,4 +1,7 @@
 #pragma once
+// TODO: Remove unused includes.
+#include "HALTypes.h"
+#include <array>
 #include <cassert>
 #include <chrono>
 #include <fcntl.h>
@@ -11,6 +14,19 @@
 #include <thread>
 
 using tTimeUnsigned = uint64_t;
+
+namespace Private {
+static inline std::optional<std::thread> toneThread;
+
+static inline std::array outputStates{false};
+static_assert(outputStates.size() == DigitalOutputSize);
+
+static inline std::array inputStates{false};
+static_assert(inputStates.size() == DigitalInputSize);
+
+static inline std::array analogOutputStates{uint8_t(0)};
+static_assert(analogOutputStates.size() == AnalogOutputSize);
+} // namespace Private
 
 static inline tTimeUnsigned millis()
 {
@@ -28,49 +44,41 @@ static inline tTimeUnsigned micros()
         .count();
 }
 
-enum ePinMode { OUTPUT, INPUT, INPUT_PULLUP };
-static inline void pinMode(unsigned pin, ePinMode mode)
+static inline void HALDigitalWrite(eDigitalOutput output, bool value)
 {
-    // TODO: Finish me...
+    Private::outputStates[static_cast<int>(output)] = value;
 }
 
-static inline bool digitalRead(unsigned pin)
+static inline bool HALDigitalRead(eDigitalInput input)
 {
-    // TODO: Finish me...
-    return false;
+    return Private::inputStates[static_cast<int>(input)];
 }
 
-static inline void digitalWrite(unsigned pin, bool value)
+static inline void HALAnalogWrite(eAnalogOutput output, uint8_t value)
 {
-    // TODO: Finish me...
+    Private::analogOutputStates[static_cast<int>(output)] = value;
 }
 
-static inline void analogWrite(unsigned pin, unsigned value)
-{
-    // TODO: Finish me...
-}
-
-static inline void noTone(unsigned pin)
-{
-    // TODO: Finish me...
-}
-
-static inline void ConsoleInit() {}
-
-static inline void ConsolePrint(const char *str)
+static inline void HALConsolePrint(const char *str)
 {
     std::cout << str << std::flush;
 }
 
-static inline void tone(unsigned /*pin*/, unsigned long freq)
+static inline void HALToneStop()
 {
-    static std::optional<std::thread> toneThread;
-    static std::string str;
-    if (toneThread) {
-        system("pkill speaker-test");
-        toneThread->detach();
+    if (Private::toneThread) {
+        auto result = system("pkill speaker-test");
+        Private::toneThread->detach();
+        Private::toneThread.reset();
     }
+}
 
-    str = "speaker-test -t sine -f " + std::to_string(freq) + " -l 0";
-    toneThread.emplace(&system, str.c_str());
+static inline void HALToneStart(unsigned long frequency)
+{
+    static std::string str;
+
+    HALToneStop();
+    str = "speaker-test -t sine -f " + std::to_string(frequency) +
+          " -l 0 >> NULL";
+    Private::toneThread.emplace(&system, str.c_str());
 }
