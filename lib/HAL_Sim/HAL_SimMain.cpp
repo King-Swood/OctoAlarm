@@ -1,3 +1,4 @@
+#include "Elapsed.h"
 #include "HAL_Sim.h"
 #include "app_hal.h"
 #include "lvgl.h"
@@ -9,7 +10,9 @@ extern void loop();
 
 namespace {
 std::optional<std::thread> toneThread;
-bool toneRunning{};
+// bool toneRunning{};
+// bool stoppedAfterTimer{};
+// tElapsedMS toneStoppedTimer;
 
 std::array outputStates = {false};
 static_assert(outputStates.size() == DigitalOutputSize);
@@ -53,11 +56,19 @@ uint8_t HALAnalogWriteRead(eAnalogOutput output)
     return analogOutputStates[static_cast<int>(output)];
 }
 
+// TODO: We could assemble tone commands in a queue guarded by a mutex.
+//  - 0 means stop, otherwise start.
+//  -
 void HALToneStop()
 {
-    toneRunning = false;
+    // auto result = system("pkill speaker-test &");
+    // if (toneRunning) {
+    //     toneStoppedTimer.Restart();
+    //     toneRunning = false;
+    //     stoppedAfterTimer = false;
+    // }
     if (toneThread) {
-        auto result = system("pkill speaker-test");
+        auto result = system("pkill speaker-test &");
         toneThread->detach();
         toneThread.reset();
     }
@@ -65,13 +76,19 @@ void HALToneStop()
 
 void HALToneStart(unsigned long frequency)
 {
-    static std::string str;
+    // HALToneStop();
+    // std::string str = "speaker-test -t sine -f " + std::to_string(frequency)
+    // +
+    //                   " -l 0 >/dev/null 2>&1 &";
+    // auto result = system(str.data());
 
     HALToneStop();
+    static std::string str;
     str = "speaker-test -t sine -f " + std::to_string(frequency) +
-          " -l 0 >/dev/null 2>&1";
+          " -l 0 >/dev/null 2>&1 &";
     toneThread.emplace(&system, str.c_str());
-    toneRunning = true;
+
+    // toneRunning = true;
 }
 
 static void event_handler(lv_event_t *e)
@@ -120,9 +137,11 @@ extern "C" void AppLoop()
 {
     loop();
 
-    if (!toneRunning) {
-        HALToneStop();
-    }
+    // if (!stoppedAfterTimer && !toneRunning &&
+    //     toneStoppedTimer.HasElapsed(250)) {
+    //     HALToneStop();
+    //     stoppedAfterTimer = true;
+    // }
 
     if (HALDigitalWriteReadState(eDigitalOutput::HeartbeatLED)) {
 
@@ -152,5 +171,9 @@ int main(void)
 
     hal_loop();
 
+    // TODO: Doesn't get here, don't know why...
+    tElapsedMS timer;
+    while (!timer.HasElapsed(500)) {
+    }
     HALToneStop();
 }
