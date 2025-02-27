@@ -13,7 +13,9 @@ constexpr long unsigned ButtonHoldMS = 1000;
 tHeartbeat<eDigitalOutput::HeartbeatLED, 1000> heartbeat{};
 tLEDPulse<eAnalogOutput::AlarmLED, 2000> ledPulse{};
 tButton<eDigitalInput::AlarmButton> button{};
+#if !DISABLE_SIREN
 tSiren<3000> siren{};
+#endif
 tThemePlayer themePlayer{};
 
 void StartupPatternBlocking()
@@ -70,7 +72,9 @@ void loop()
     heartbeat.Update();
     ledPulse.Update();
     button.Update();
+#if !DISABLE_SIREN
     siren.Update();
+#endif
 
     bool firstTime = state_ != lastState_;
     lastState_ = state_;
@@ -79,7 +83,9 @@ void loop()
     case eState::Idle:
         if (firstTime) {
             ledPulse.Stop();
+#if !DISABLE_SIREN
             siren.Stop();
+#endif
         }
         if (button.JustReleased()) {
             state_ = eState::Alarming;
@@ -91,7 +97,9 @@ void loop()
     case eState::Alarming:
         if (firstTime) {
             ledPulse.Start();
+#if !DISABLE_SIREN
             siren.Start();
+#endif
         }
         if (button.JustReleased()) {
             state_ = eState::Idle;

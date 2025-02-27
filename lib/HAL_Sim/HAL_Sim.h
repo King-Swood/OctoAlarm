@@ -13,6 +13,8 @@
 #include <sys/ioctl.h>
 #include <thread>
 
+#define DISABLE_SIREN 1
+
 using tTimeUnsigned = uint64_t;
 
 static inline void HALConsolePrint(const char *str)

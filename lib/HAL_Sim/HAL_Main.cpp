@@ -43,6 +43,11 @@ void HALAnalogWrite(eAnalogOutput output, uint8_t value)
     analogOutputStates[static_cast<int>(output)] = value;
 }
 
+uint8_t HALAnalogWriteRead(eAnalogOutput output)
+{
+    return analogOutputStates[static_cast<int>(output)];
+}
+
 void HALToneStop()
 {
     if (toneThread) {
@@ -94,6 +99,16 @@ void CreateGUI()
     lv_obj_set_size(btnAlarmButtonLED, 120, 120);
 }
 
+namespace {
+constexpr lv_color_t CalcAlarmButtonColour(uint8_t analogValue)
+{
+    // Limit the range to half brightness up to full brightness.
+    analogValue /= 2;
+    analogValue += std::numeric_limits<uint8_t>::max() / 2;
+    return lv_color_t{analogValue, analogValue, analogValue};
+}
+} // namespace
+
 extern "C" void AppLoop()
 {
     loop();
@@ -107,6 +122,10 @@ extern "C" void AppLoop()
         // HALConsolePrint("Set to false\n");
         lv_obj_remove_state(cbHeartbeat, LV_STATE_CHECKED);
     }
+
+    lv_obj_set_style_bg_color(
+        btnAlarmButtonLED,
+        CalcAlarmButtonColour(HALAnalogWriteRead(eAnalogOutput::AlarmLED)), 0);
 }
 
 int main(void)
