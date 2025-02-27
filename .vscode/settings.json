@@ -42,6 +42,11 @@
         "format": "cpp",
         "cctype": "cpp",
         "variant": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "atomic": "cpp",
+        "charconv": "cpp",
+        "numbers": "cpp",
+        "span": "cpp",
+        "stdexcept": "cpp"
     }
 }
