@@ -1,113 +1,128 @@
 #include "HAL_Sim.h"
-#include <termox/termox.hpp>
+#include "app_hal.h"
+#include "lvgl.h"
+
+#include "demos/lv_demos.h"
 
 extern void setup();
 extern void loop();
 
-using namespace ox;
+std::optional<std::thread> toneThread;
 
-// struct App : layout::Vertical<> {
-//     // Label &title = this->make_child<Label>(U"OctoAlarm Sim");
-//     HCheckbox_label &foo = this->make_child<HCheckbox_label>({U"Foo"});
-//     HCheckbox_label &bar = this->make_child<HCheckbox_label>({U"Bar"});
-//     // Thin_button &baz = this->make_child<Thin_button>(U"Baz");
-//     Confirm_button &reset = this->make_child<Confirm_button>(U"Reset");
+std::array outputStates = {false};
+static_assert(outputStates.size() == DigitalOutputSize);
 
-//     App() { *this | pipe::fixed_width(16); }
+std::array inputStates = {false};
+static_assert(inputStates.size() == DigitalInputSize);
 
-//     protected:
-//     void timer_event() override{
+std::array analogOutputStates = {uint8_t(0)};
+static_assert(analogOutputStates.size() == AnalogOutputSize);
 
-//     }
-// };#include <map>
-#include <string>
-
-#include <termox/termox.hpp>
-
-using namespace ox;
-
-class Pinbox : public Widget {
-  public:
-    // Emitted when a new pin is inserted.
-    sl::Signal<void(Point)> pin_inserted;
-
-    // Emitted when an existing pin is removed.
-    sl::Signal<void(Point)> pin_removed;
-
-  public:
-    Pinbox()
-    {
-        using namespace ox::pipe;
-        *this | on_mouse_press([&](auto const &m) { this->handle_mouse(m); }) |
-            on_mouse_move([&](auto const &m) { this->handle_mouse(m); }) |
-            on_paint([&](Painter &p) {
-                for (auto [xy, color] : points_)
-                    p.put(U'•' | fg(color), xy);
-            });
-    }
-
-  public:
-    // Set the Color for newly inserted pins.
-    void set_foreground(Color c) { foreground_ = c; }
-
-    // Remove all pins from the screen.
-    void clear_screen()
-    {
-        points_.clear();
-        this->update();
-    }
-
-  private:
-    std::map<Point, Color> points_;
-    Color foreground_ = Color::Light_blue;
-
-  private:
-    // Inserts pin at Point p, if p is empty; emits pin_inserted Signal.
-    void insert_pin(Point p)
-    {
-        auto const [_, inserted] = points_.insert({p, foreground_});
-        if (inserted) {
-            pin_inserted.emit(p);
-            this->update(); // Post a Paint Event
-        }
-    }
-
-    // Removes pin at Point p, if it exists; emits pin_removed Signal.
-    void remove_pin(Point p)
-    {
-        auto const count = points_.erase(p);
-        if (count != 0) {
-            pin_removed.emit(p);
-            this->update(); // Post a Paint Event
-        }
-    }
-
-    void handle_mouse(Mouse const &m)
-    {
-        switch (m.button) {
-        case Mouse::Button::Left:
-            this->insert_pin(m.at);
-            break;
-        case Mouse::Button::Right:
-            this->remove_pin(m.at);
-            break;
-        default:
-            break;
-        }
-    }
-
-    auto timer_event() -> bool override
-    {
-        loop();
-        return Widget::timer_event();
-    }
-};
-
-int main()
+void HALDigitalWrite(eDigitalOutput output, bool value)
 {
+    outputStates[static_cast<int>(output)] = value;
+}
+
+bool HALDigitalWriteReadState(eDigitalOutput output)
+{
+    return outputStates[static_cast<int>(output)];
+}
+
+bool HALDigitalRead(eDigitalInput input)
+{
+    return inputStates[static_cast<int>(input)];
+}
+
+void HALAnalogWrite(eAnalogOutput output, uint8_t value)
+{
+    analogOutputStates[static_cast<int>(output)] = value;
+}
+
+void HALToneStop()
+{
+    if (toneThread) {
+        auto result = system("pkill speaker-test");
+        toneThread->detach();
+        toneThread.reset();
+    }
+}
+
+void HALToneStart(unsigned long frequency)
+{
+    static std::string str;
+
+    HALToneStop();
+    str = "speaker-test -t sine -f " + std::to_string(frequency) +
+          " -l 0 >> NULL";
+    toneThread.emplace(&system, str.c_str());
+}
+
+static void btn_event_cb(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *btn = reinterpret_cast<lv_obj_t *>(lv_event_get_target(e));
+    if (code == LV_EVENT_CLICKED) {
+        static uint8_t cnt = 0;
+        cnt++;
+
+        /*Get the first child of the button which is the label and change its
+         * text*/
+        lv_obj_t *label = lv_obj_get_child(btn, 0);
+        lv_label_set_text_fmt(label, "Button: %d", cnt);
+    }
+}
+
+static lv_obj_t *cbHeartbeat;
+
+/**
+ * Create a button with a label and react on click event.
+ */
+void lv_example_get_started_2(void)
+{
+    lv_obj_set_flex_flow(lv_screen_active(), LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(lv_screen_active(), LV_FLEX_ALIGN_CENTER,
+                          LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
+
+    cbHeartbeat = lv_checkbox_create(lv_screen_active());
+    lv_checkbox_set_text(cbHeartbeat, "Hearbeat LED");
+    // lv_obj_add_event_cb(cb, event_handler, LV_EVENT_ALL, NULL);
+
+    // lv_obj_t *btn = lv_button_create(
+    //     lv_screen_active());       /*Add a button the current screen*/
+    // lv_obj_set_pos(btn, 10, 10);   /*Set its position*/
+    // lv_obj_set_size(btn, 120, 50); /*Set its size*/
+    // lv_obj_add_event_cb(btn, btn_event_cb, LV_EVENT_ALL,
+    //                     NULL); /*Assign a callback to the button*/
+
+    // lv_obj_t *label = lv_label_create(btn); /*Add a label to the button*/
+    // lv_label_set_text(label, "Button");     /*Set the labels text*/
+    // lv_obj_center(label);
+}
+
+extern "C" void AppLoop()
+{
+    loop();
+
+    if (HALDigitalWriteReadState(eDigitalOutput::HeartbeatLED)) {
+
+        // HALConsolePrint("Set to true\n");
+        lv_obj_add_state(cbHeartbeat, LV_STATE_CHECKED);
+    }
+    else {
+        // HALConsolePrint("Set to false\n");
+        lv_obj_remove_state(cbHeartbeat, LV_STATE_CHECKED);
+    }
+}
+
+int main(void)
+{
+    lv_init();
+
+    hal_setup();
     setup();
-    // while (true) {
-    //     loop();
-    // }
-    return ox::System{}.run<Pinbox>();
+
+    // lv_demo_widgets();
+    lv_example_get_started_2();
+
+    hal_loop();
 }

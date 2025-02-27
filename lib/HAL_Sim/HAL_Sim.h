@@ -15,18 +15,10 @@
 
 using tTimeUnsigned = uint64_t;
 
-namespace Private {
-static inline std::optional<std::thread> toneThread;
-
-static inline std::array outputStates{false};
-static_assert(outputStates.size() == DigitalOutputSize);
-
-static inline std::array inputStates{false};
-static_assert(inputStates.size() == DigitalInputSize);
-
-static inline std::array analogOutputStates{uint8_t(0)};
-static_assert(analogOutputStates.size() == AnalogOutputSize);
-} // namespace Private
+static inline void HALConsolePrint(const char *str)
+{
+    std::cout << str << std::flush;
+}
 
 static inline tTimeUnsigned millis()
 {
@@ -44,41 +36,9 @@ static inline tTimeUnsigned micros()
         .count();
 }
 
-static inline void HALDigitalWrite(eDigitalOutput output, bool value)
-{
-    Private::outputStates[static_cast<int>(output)] = value;
-}
-
-static inline bool HALDigitalRead(eDigitalInput input)
-{
-    return Private::inputStates[static_cast<int>(input)];
-}
-
-static inline void HALAnalogWrite(eAnalogOutput output, uint8_t value)
-{
-    Private::analogOutputStates[static_cast<int>(output)] = value;
-}
-
-static inline void HALConsolePrint(const char *str)
-{
-    std::cout << str << std::flush;
-}
-
-static inline void HALToneStop()
-{
-    if (Private::toneThread) {
-        auto result = system("pkill speaker-test");
-        Private::toneThread->detach();
-        Private::toneThread.reset();
-    }
-}
-
-static inline void HALToneStart(unsigned long frequency)
-{
-    static std::string str;
-
-    HALToneStop();
-    str = "speaker-test -t sine -f " + std::to_string(frequency) +
-          " -l 0 >> NULL";
-    Private::toneThread.emplace(&system, str.c_str());
-}
+void HALDigitalWrite(eDigitalOutput output, bool value);
+bool HALDigitalWriteReadState(eDigitalOutput output);
+bool HALDigitalRead(eDigitalInput input);
+void HALAnalogWrite(eAnalogOutput output, uint8_t value);
+void HALToneStop();
+void HALToneStart(unsigned long frequency);

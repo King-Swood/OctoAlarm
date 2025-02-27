@@ -47,6 +47,8 @@
         "charconv": "cpp",
         "numbers": "cpp",
         "span": "cpp",
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "bitset": "cpp",
+        "regex": "cpp"
     }
 }
