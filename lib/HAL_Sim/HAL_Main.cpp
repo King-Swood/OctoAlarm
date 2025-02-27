@@ -33,6 +33,11 @@ bool HALDigitalRead(eDigitalInput input)
     return inputStates[static_cast<int>(input)];
 }
 
+void HALDigitalReadWriteState(eDigitalInput input, bool value)
+{
+    inputStates[static_cast<int>(input)] = value;
+}
+
 void HALAnalogWrite(eAnalogOutput output, uint8_t value)
 {
     analogOutputStates[static_cast<int>(output)] = value;
@@ -53,31 +58,29 @@ void HALToneStart(unsigned long frequency)
 
     HALToneStop();
     str = "speaker-test -t sine -f " + std::to_string(frequency) +
-          " -l 0 >> NULL";
+          " -l 0 >/dev/null 2>&1";
     toneThread.emplace(&system, str.c_str());
 }
 
-static void btn_event_cb(lv_event_t *e)
+static void event_handler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *btn = reinterpret_cast<lv_obj_t *>(lv_event_get_target(e));
-    if (code == LV_EVENT_CLICKED) {
-        static uint8_t cnt = 0;
-        cnt++;
 
-        /*Get the first child of the button which is the label and change its
-         * text*/
-        lv_obj_t *label = lv_obj_get_child(btn, 0);
-        lv_label_set_text_fmt(label, "Button: %d", cnt);
+    if (code == LV_EVENT_PRESSED) {
+        HALDigitalReadWriteState(eDigitalInput::AlarmButton, false);
+    }
+    else if (code == LV_EVENT_RELEASED) {
+        HALDigitalReadWriteState(eDigitalInput::AlarmButton, true);
     }
 }
 
 static lv_obj_t *cbHeartbeat;
+static lv_obj_t *btnAlarmButtonLED;
 
 /**
  * Create a button with a label and react on click event.
  */
-void lv_example_get_started_2(void)
+void CreateGUI()
 {
     lv_obj_set_flex_flow(lv_screen_active(), LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(lv_screen_active(), LV_FLEX_ALIGN_CENTER,
@@ -85,18 +88,10 @@ void lv_example_get_started_2(void)
 
     cbHeartbeat = lv_checkbox_create(lv_screen_active());
     lv_checkbox_set_text(cbHeartbeat, "Hearbeat LED");
-    // lv_obj_add_event_cb(cb, event_handler, LV_EVENT_ALL, NULL);
 
-    // lv_obj_t *btn = lv_button_create(
-    //     lv_screen_active());       /*Add a button the current screen*/
-    // lv_obj_set_pos(btn, 10, 10);   /*Set its position*/
-    // lv_obj_set_size(btn, 120, 50); /*Set its size*/
-    // lv_obj_add_event_cb(btn, btn_event_cb, LV_EVENT_ALL,
-    //                     NULL); /*Assign a callback to the button*/
-
-    // lv_obj_t *label = lv_label_create(btn); /*Add a label to the button*/
-    // lv_label_set_text(label, "Button");     /*Set the labels text*/
-    // lv_obj_center(label);
+    btnAlarmButtonLED = lv_button_create(lv_screen_active());
+    lv_obj_add_event_cb(btnAlarmButtonLED, event_handler, LV_EVENT_ALL, NULL);
+    lv_obj_set_size(btnAlarmButtonLED, 120, 120);
 }
 
 extern "C" void AppLoop()
@@ -116,13 +111,16 @@ extern "C" void AppLoop()
 
 int main(void)
 {
+    HALDigitalReadWriteState(eDigitalInput::AlarmButton, true);
+
     lv_init();
 
     hal_setup();
     setup();
 
-    // lv_demo_widgets();
-    lv_example_get_started_2();
+    CreateGUI();
 
     hal_loop();
+
+    HALToneStop();
 }

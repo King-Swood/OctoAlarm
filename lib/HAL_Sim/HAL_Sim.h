@@ -39,6 +39,7 @@ static inline tTimeUnsigned micros()
 void HALDigitalWrite(eDigitalOutput output, bool value);
 bool HALDigitalWriteReadState(eDigitalOutput output);
 bool HALDigitalRead(eDigitalInput input);
+void HALDigitalReadWriteState(eDigitalInput input, bool value);
 void HALAnalogWrite(eAnalogOutput output, uint8_t value);
 void HALToneStop();
 void HALToneStart(unsigned long frequency);
