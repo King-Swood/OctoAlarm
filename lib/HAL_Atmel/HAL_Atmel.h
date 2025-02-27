@@ -3,6 +3,8 @@
 #include "HALTypes.h"
 #include <Arduino.h>
 
+using tTimeUnsigned = unsigned long;
+
 namespace Private {
 
 static const int AnalogOutputPins[] = {
@@ -58,6 +60,10 @@ static inline void HALInit()
     Serial.begin(115200);
 }
 
+static inline tTimeUnsigned HALMillis() { return millis(); }
+
+static inline tTimeUnsigned HALMicros() { return micros(); }
+
 static inline void HALDigitalWrite(eDigitalOutput output, bool value)
 {
     digitalWrite(Private::DigitalOutputPins[static_cast<int>(output)], value);
@@ -66,7 +72,7 @@ static inline void HALDigitalWrite(eDigitalOutput output, bool value)
 static inline bool HALDigitalRead(eDigitalInput input)
 {
     return digitalRead(
-               Private::DigitalInputPins[static_cast<int>(input)].pin) != 0;
+               Private::DigitalInputPins[static_cast<int>(input)].pin) == HIGH;
 }
 
 static inline void HALAnalogWrite(eAnalogOutput output, uint8_t value)

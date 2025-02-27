@@ -7,7 +7,9 @@
 extern void setup();
 extern void loop();
 
+namespace {
 std::optional<std::thread> toneThread;
+bool toneRunning{};
 
 std::array outputStates = {false};
 static_assert(outputStates.size() == DigitalOutputSize);
@@ -17,6 +19,7 @@ static_assert(inputStates.size() == DigitalInputSize);
 
 std::array analogOutputStates = {uint8_t(0)};
 static_assert(analogOutputStates.size() == AnalogOutputSize);
+} // namespace
 
 void HALDigitalWrite(eDigitalOutput output, bool value)
 {
@@ -50,6 +53,7 @@ uint8_t HALAnalogWriteRead(eAnalogOutput output)
 
 void HALToneStop()
 {
+    toneRunning = false;
     if (toneThread) {
         auto result = system("pkill speaker-test");
         toneThread->detach();
@@ -65,6 +69,7 @@ void HALToneStart(unsigned long frequency)
     str = "speaker-test -t sine -f " + std::to_string(frequency) +
           " -l 0 >/dev/null 2>&1";
     toneThread.emplace(&system, str.c_str());
+    toneRunning = true;
 }
 
 static void event_handler(lv_event_t *e)
@@ -112,6 +117,10 @@ constexpr lv_color_t CalcAlarmButtonColour(uint8_t analogValue)
 extern "C" void AppLoop()
 {
     loop();
+
+    if (!toneRunning) {
+        HALToneStop();
+    }
 
     if (HALDigitalWriteReadState(eDigitalOutput::HeartbeatLED)) {
 

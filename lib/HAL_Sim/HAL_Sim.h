@@ -22,7 +22,7 @@ static inline void HALConsolePrint(const char *str)
     std::cout << str << std::flush;
 }
 
-static inline tTimeUnsigned millis()
+static inline tTimeUnsigned HALMillis()
 {
     using namespace std::chrono;
     return std::chrono::duration<double, std::milli>(
@@ -30,7 +30,7 @@ static inline tTimeUnsigned millis()
         .count();
 }
 
-static inline tTimeUnsigned micros()
+static inline tTimeUnsigned HALMicros()
 {
     using namespace std::chrono;
     return std::chrono::duration<double, std::micro>(
@@ -39,9 +39,7 @@ static inline tTimeUnsigned micros()
 }
 
 void HALDigitalWrite(eDigitalOutput output, bool value);
-bool HALDigitalWriteReadState(eDigitalOutput output);
 bool HALDigitalRead(eDigitalInput input);
-void HALDigitalReadWriteState(eDigitalInput input, bool value);
 void HALAnalogWrite(eAnalogOutput output, uint8_t value);
 void HALToneStop();
 void HALToneStart(unsigned long frequency);

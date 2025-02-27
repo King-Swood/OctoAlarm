@@ -5,7 +5,7 @@ class tElapsedMS {
   public:
     bool HasElapsed(long unsigned periodMS) const
     {
-        return (millis() - originalMS_) >= periodMS;
+        return (HALMillis() - originalMS_) >= periodMS;
     }
     bool HasElapsedRestart(long unsigned periodMS)
     {
@@ -15,17 +15,17 @@ class tElapsedMS {
         }
         return false;
     }
-    void Restart() { originalMS_ = millis(); }
+    void Restart() { originalMS_ = HALMillis(); }
 
   private:
-    long unsigned originalMS_{millis()};
+    long unsigned originalMS_{HALMillis()};
 };
 
 class tElapsedUS {
   public:
     bool HasElapsed(long unsigned periodUS) const
     {
-        return (micros() - originalUS_) >= periodUS;
+        return (HALMicros() - originalUS_) >= periodUS;
     }
     bool HasElapsedRestart(long unsigned periodUS)
     {
@@ -35,8 +35,8 @@ class tElapsedUS {
         }
         return false;
     }
-    void Restart() { originalUS_ = micros(); }
+    void Restart() { originalUS_ = HALMicros(); }
 
   private:
-    long unsigned originalUS_{micros()};
+    long unsigned originalUS_{HALMicros()};
 };
