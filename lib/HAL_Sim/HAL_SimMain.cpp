@@ -21,6 +21,8 @@ std::array analogOutputStates = {uint8_t(0)};
 static_assert(analogOutputStates.size() == AnalogOutputSize);
 } // namespace
 
+void HALInit() {}
+
 void HALDigitalWrite(eDigitalOutput output, bool value)
 {
     outputStates[static_cast<int>(output)] = value;

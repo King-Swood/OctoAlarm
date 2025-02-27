@@ -52,6 +52,7 @@ void StartupPatternBlocking()
 
 void setup()
 {
+    HALInit();
     HALConsolePrint("OctoAlarm Version ");
     HALConsolePrint(Globals::Version);
     HALConsolePrint("\n");

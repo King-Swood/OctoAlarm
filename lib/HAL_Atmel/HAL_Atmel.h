@@ -64,6 +64,8 @@ static inline tTimeUnsigned HALMillis() { return millis(); }
 
 static inline tTimeUnsigned HALMicros() { return micros(); }
 
+static inline void HALConsolePrint(const char *str) { Serial.print(str); }
+
 static inline void HALDigitalWrite(eDigitalOutput output, bool value)
 {
     digitalWrite(Private::DigitalOutputPins[static_cast<int>(output)], value);
@@ -79,8 +81,6 @@ static inline void HALAnalogWrite(eAnalogOutput output, uint8_t value)
 {
     analogWrite(Private::AnalogOutputPins[static_cast<int>(output)], value);
 }
-
-static inline void HALConsolePrint(const char *str) { Serial.print(str); }
 
 static inline void HALToneStart(unsigned long frequency)
 {
