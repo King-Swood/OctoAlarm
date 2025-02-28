@@ -116,7 +116,7 @@ void CreateGUI()
                           LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
 
     cbHeartbeat = lv_checkbox_create(lv_screen_active());
-    lv_checkbox_set_text(cbHeartbeat, "Hearbeat LED");
+    lv_checkbox_set_text(cbHeartbeat, "Heartbeat LED");
 
     btnAlarmButtonLED = lv_button_create(lv_screen_active());
     lv_obj_add_event_cb(btnAlarmButtonLED, event_handler, LV_EVENT_ALL, NULL);
