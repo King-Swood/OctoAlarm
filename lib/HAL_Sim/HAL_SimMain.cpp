@@ -84,8 +84,9 @@ void HALToneStart(unsigned long frequency)
 
     HALToneStop();
     static std::string str;
+    // Limit to 400ms, as that should be the longest we need to play a note for.
     str = "speaker-test -t sine -f " + std::to_string(frequency) +
-          " -l 0 >/dev/null 2>&1 &";
+          " -l 400 >/dev/null 2>&1 &";
     toneThread.emplace(&system, str.c_str());
 
     // toneRunning = true;
