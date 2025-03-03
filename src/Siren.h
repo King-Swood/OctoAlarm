@@ -1,14 +1,10 @@
 #pragma once
 #include "Elapsed.h"
-#include <Arduino.h>
+#include "HAL.h"
 
-template <unsigned PIN, long unsigned UpdatePeriodUS> class tSiren {
+template <long unsigned UpdatePeriodUS> class tSiren {
   public:
-    tSiren()
-    {
-        pinMode(PIN, OUTPUT);
-        Update();
-    }
+    tSiren() { Update(); }
 
     void Start() { start_ = true; }
     void Stop() { stop_ = true; }
@@ -33,7 +29,7 @@ template <unsigned PIN, long unsigned UpdatePeriodUS> class tSiren {
         case eState::Off:
             if (firstTime) {
                 currentFreq = 0;
-                noTone(PIN);
+                HALToneStop();
             }
             break;
         case eState::Increasing:
@@ -48,7 +44,7 @@ template <unsigned PIN, long unsigned UpdatePeriodUS> class tSiren {
                     state_ = eState::Pause;
                 }
             }
-            tone(PIN, currentFreq);
+            HALToneStart(currentFreq);
             break;
         case eState::Pause:
             if (firstTime) {

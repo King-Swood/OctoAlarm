@@ -1,14 +1,10 @@
 #pragma once
 #include "Elapsed.h"
-#include <Arduino.h>
+#include "HAL.h"
 
-template <unsigned PIN, long unsigned UpdatePeriodUS> class tLEDPulse {
+template <eAnalogOutput Output, long unsigned UpdatePeriodUS> class tLEDPulse {
   public:
-    tLEDPulse()
-    {
-        pinMode(PIN, OUTPUT);
-        Update();
-    }
+    tLEDPulse() { Update(); }
 
     void Start() { start_ = true; }
     void Stop() { stop_ = true; }
@@ -38,7 +34,7 @@ template <unsigned PIN, long unsigned UpdatePeriodUS> class tLEDPulse {
         case eState::Off:
             if (firstTime) {
                 pwmValue_ = 0;
-                analogWrite(PIN, constantPWMValue_);
+                HALAnalogWrite(Output, constantPWMValue_);
             }
             break;
         case eState::Increasing:
@@ -53,7 +49,7 @@ template <unsigned PIN, long unsigned UpdatePeriodUS> class tLEDPulse {
                     state_ = eState::PauseBright;
                 }
             }
-            analogWrite(PIN, pwmValue_);
+            HALAnalogWrite(Output, pwmValue_);
             break;
         case eState::PauseBright:
             if (firstTime) {
@@ -75,7 +71,7 @@ template <unsigned PIN, long unsigned UpdatePeriodUS> class tLEDPulse {
                     state_ = eState::PauseOff;
                 }
             }
-            analogWrite(PIN, pwmValue_);
+            HALAnalogWrite(Output, pwmValue_);
             break;
         case eState::PauseOff:
             if (firstTime) {

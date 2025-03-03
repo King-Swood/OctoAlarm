@@ -1,11 +1,11 @@
 #pragma once
 #include "Debounce.h"
 #include "Elapsed.h"
-#include <Arduino.h>
+#include "HAL.h"
 
-template <int PIN> class tButton {
+template <eDigitalInput Input> class tButton {
   public:
-    tButton() { pinMode(PIN, INPUT_PULLUP); }
+    tButton() {}
     bool IsPressed() const { return pressed_; }
     bool IsReleased() const { return !pressed_; }
     bool JustChanged() const { return pressed_ != lastPressed_; }
@@ -18,7 +18,7 @@ template <int PIN> class tButton {
     void Update()
     {
         lastPressed_ = pressed_;
-        debouncedInput_.Update(!digitalRead(PIN));
+        debouncedInput_.Update(!HALDigitalRead(Input));
         pressed_ = debouncedInput_.State();
         if (JustPressed()) {
             pressedTimeMS_.Restart();

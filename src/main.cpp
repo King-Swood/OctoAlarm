@@ -1,24 +1,22 @@
 #include "Button.h"
 #include "Globals.h"
+#include "HAL.h"
 #include "Heartbeat.h"
 #include "LEDPulse.h"
 #include "PatternProcessor.h"
 #include "Siren.h"
 #include "Theme.h"
-#include <Arduino.h>
 
 namespace {
-constexpr int HeartbeatLEDPin = 13;
-constexpr int ButtonLEDPin = 10;
-constexpr int ButtonPin = 11;
-constexpr int BeeperPin = 3;
 constexpr long unsigned ButtonHoldMS = 1000;
 
-tHeartbeat<HeartbeatLEDPin, 1000> heartbeat{};
-tLEDPulse<ButtonLEDPin, 2000> ledPulse{};
-tButton<ButtonPin> button{};
-tSiren<BeeperPin, 3000> siren{};
-tThemePlayer<BeeperPin> themePlayer{};
+tHeartbeat<eDigitalOutput::HeartbeatLED, 1000> heartbeat{};
+tLEDPulse<eAnalogOutput::AlarmLED, 2000> ledPulse{};
+tButton<eDigitalInput::AlarmButton> button{};
+#if !DISABLE_SIREN
+tSiren<3000> siren{};
+#endif
+tThemePlayer themePlayer{};
 
 void StartupPatternBlocking()
 {
@@ -40,12 +38,12 @@ void StartupPatternBlocking()
 
     while (!startupProcessor.IsFinished()) {
         startupProcessor.Update([](const tStartupPatternValue &value) {
-            digitalWrite(ButtonLEDPin, value.ledState);
+            HALDigitalWrite(eDigitalOutput::HeartbeatLED, value.ledState);
             if (value.beeperFreq == 0) {
-                noTone(BeeperPin);
+                HALToneStop();
             }
             else {
-                tone(BeeperPin, value.beeperFreq);
+                HALToneStart(value.beeperFreq);
             }
         });
     }
@@ -54,9 +52,10 @@ void StartupPatternBlocking()
 
 void setup()
 {
-    Serial.begin(115200);
-    Serial.print("OctoAlarm Version ");
-    Serial.println(Globals::Version);
+    HALInit();
+    HALConsolePrint("OctoAlarm Version ");
+    HALConsolePrint(Globals::Version);
+    HALConsolePrint("\n");
 
     StartupPatternBlocking();
 
@@ -74,7 +73,9 @@ void loop()
     heartbeat.Update();
     ledPulse.Update();
     button.Update();
+#if !DISABLE_SIREN
     siren.Update();
+#endif
 
     bool firstTime = state_ != lastState_;
     lastState_ = state_;
@@ -83,7 +84,9 @@ void loop()
     case eState::Idle:
         if (firstTime) {
             ledPulse.Stop();
+#if !DISABLE_SIREN
             siren.Stop();
+#endif
         }
         if (button.JustReleased()) {
             state_ = eState::Alarming;
@@ -95,7 +98,9 @@ void loop()
     case eState::Alarming:
         if (firstTime) {
             ledPulse.Start();
+#if !DISABLE_SIREN
             siren.Start();
+#endif
         }
         if (button.JustReleased()) {
             state_ = eState::Idle;
