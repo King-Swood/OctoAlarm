@@ -8,7 +8,7 @@ using tTimeUnsigned = unsigned long;
 namespace Private {
 
 static const int AnalogOutputPins[] = {
-    10 // AlarmLED
+    8 // AlarmLED
 };
 static_assert(ArrayItemCount(AnalogOutputPins, int) == AnalogOutputSize);
 
@@ -18,12 +18,13 @@ struct tInput {
     ePullup pullup{ePullup::No};
 };
 static const tInput DigitalInputPins[] = {
-    {11, tInput::ePullup::Yes} // AlarmButton
+    {7, tInput::ePullup::Yes} // AlarmButton
 };
 static_assert(ArrayItemCount(DigitalInputPins, tInput) == DigitalInputSize);
 
+// Not connected, as the onboard LED shares a pin with SCLK.
 static const int DigitalOutputPins[] = {
-    13 // HeartbeatLED
+    6 // HeartbeatLED
 };
 static_assert(ArrayItemCount(DigitalOutputPins, int) == DigitalOutputSize);
 
