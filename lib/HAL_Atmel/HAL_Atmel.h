@@ -1,6 +1,7 @@
 #pragma once
 #include "Globals.h"
 #include "HALTypes.h"
+#include "HAL_Radio.h"
 #include <Arduino.h>
 
 using tTimeUnsigned = unsigned long;
@@ -89,3 +90,15 @@ static inline void HALToneStart(unsigned long frequency)
 }
 
 static inline void HALToneStop() { noTone(Private::BeeperPin); }
+
+static inline tHALRadioRX &HALRadioRXInstance()
+{
+    static tHALRadioRX instance;
+    return instance;
+}
+
+static inline tHALRadioTX &HALRadioTXInstance()
+{
+    static tHALRadioTX instance;
+    return instance;
+}

@@ -4,6 +4,7 @@
 #include "Heartbeat.h"
 #include "LEDPulse.h"
 #include "PatternProcessor.h"
+#include "Radio.h"
 #include "Siren.h"
 #include "Theme.h"
 
@@ -17,6 +18,11 @@ tButton<eDigitalInput::AlarmButton> button{};
 tSiren<3000> siren{};
 #endif
 tThemePlayer themePlayer{};
+#if RF_RECEIVER
+tRadioRX radio{};
+#else
+tRadioTX radio{};
+#endif
 
 void StartupPatternBlocking()
 {
@@ -76,6 +82,9 @@ void loop()
 #if !DISABLE_SIREN
     siren.Update();
 #endif
+#if RF_RECEIVER
+    radio.Update();
+#endif
 
     bool firstTime = state_ != lastState_;
     lastState_ = state_;
@@ -89,6 +98,9 @@ void loop()
 #endif
         }
         if (button.JustReleased()) {
+#if !RF_RECEIVER
+            radio.SendCommand();
+#endif
             state_ = eState::Alarming;
         }
         else if (button.IsHeld(ButtonHoldMS)) {

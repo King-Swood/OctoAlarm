@@ -18,9 +18,9 @@ GND   -> GND
 
 */
 
-class tRadio {
+class tHALRadioBase {
   public:
-    tRadio()
+    tHALRadioBase()
     {
         if (radio_.init(RADIO_ID, PIN_RADIO_CE, PIN_RADIO_CSN)) {
             open_ = true;
@@ -39,8 +39,9 @@ class tRadio {
     bool open_{};
 };
 
-class tRadioRX : private tRadio {
-    tRadioRX() { radio_.startRx(); }
+class tHALRadioRX : public tHALRadioBase {
+  public:
+    tHALRadioRX() { radio_.startRx(); }
 
     void Update()
     {
@@ -57,6 +58,8 @@ class tRadioRX : private tRadio {
         }
     }
 
+    bool DataReceived() const { return dataReceived_; }
+
     tRadioPacket GetPacket() const
     {
         dataReceived_ = false;
@@ -68,8 +71,9 @@ class tRadioRX : private tRadio {
     mutable bool dataReceived_{};
 };
 
-class tRadioTX : private tRadio {
-    tRadioTX() = default;
+class tHALRadioTX : public tHALRadioBase {
+  public:
+    tHALRadioTX() = default;
 
     bool SendPacket(const tRadioPacket &packet)
     {
