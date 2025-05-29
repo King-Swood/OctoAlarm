@@ -28,6 +28,14 @@ class tRadioRX {
     void Update()
     {
         const auto &radio = HALRadioRXInstance();
+
+        if (!firstPassComplete_) {
+            if (!radio.IsOpen()) {
+                HALConsolePrint("Radio didn't initialise properly\n");
+            }
+            firstPassComplete_ = true;
+        }
+
         if (radio.IsOpen() && radio.DataReceived()) {
             const auto packet = radio.GetPacket();
             HALConsolePrint(packet.String());
@@ -36,5 +44,5 @@ class tRadioRX {
     }
 
   private:
-    unsigned counter_{};
+    bool firstPassComplete_{};
 };
