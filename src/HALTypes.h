@@ -13,8 +13,35 @@ enum class eAnalogOutput { AlarmLED, Size };
 static constexpr auto AnalogOutputSize =
     static_cast<unsigned>(eAnalogOutput::Size);
 
-struct tRadioPacket {
+class tRadioPacket {
+  public:
     static constexpr auto MaxSize = 32U;
-    uint8_t data[MaxSize]{};
-    uint8_t dataLength{};
+
+    tRadioPacket() = default;
+    tRadioPacket(const char *str) { AddString(str); }
+    void AddString(const char *str)
+    {
+        while (*str != '\0') {
+            if (dataLength_ >= (MaxSize - 1)) {
+                break;
+            }
+            AddChar(*str++);
+        }
+        AddChar('\0');
+    }
+    const char *String() const { return data_; }
+
+  private:
+    friend class tHALRadioRX;
+    friend class tHALRadioTX;
+    // These are private, as we want to limit the packet to string data.
+    void AddChar(char data)
+    {
+        if (dataLength_ < MaxSize) {
+            data_[dataLength_++] = data;
+        }
+    }
+
+    char data_[MaxSize]{};
+    uint8_t dataLength_{};
 };

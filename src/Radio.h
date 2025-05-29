@@ -10,19 +10,13 @@ class tRadioTX {
             return false;
         }
 
-        tRadioPacket packet{};
-        packet.data[0] = 'h';
-        packet.data[1] = 'i';
-        packet.data[2] = 'a' + counter_;
-        if (++counter_ > ('z' - 'a')) {
-            counter_ = 0;
-        }
-        packet.data[3] = '\0';
-        packet.dataLength = 4;
-        auto result = HALRadioTXInstance().SendPacket(packet);
+        auto result =
+            HALRadioTXInstance().SendPacket(tRadioPacket{"ring doorbell"});
         if (!result) {
-            HALConsolePrint("Radio failed to send command\n");
+            HALConsolePrint(
+                "Radio failed to send command or didn't receive ACK\n");
         }
+        return result;
     }
 
   private:
@@ -35,9 +29,8 @@ class tRadioRX {
     {
         const auto &radio = HALRadioRXInstance();
         if (radio.IsOpen() && radio.DataReceived()) {
-            auto packet = radio.GetPacket();
-            packet.data[packet.MaxSize - 1] = 0;
-            HALConsolePrint(reinterpret_cast<const char *>(packet.data));
+            const auto packet = radio.GetPacket();
+            HALConsolePrint(packet.String());
             HALConsolePrint("\n");
         }
     }

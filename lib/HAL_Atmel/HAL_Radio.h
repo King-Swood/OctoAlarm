@@ -52,8 +52,8 @@ class tHALRadioRX : public tHALRadioBase {
         auto dataLength = radio_.hasData();
 
         if (dataLength > 0) {
-            radio_.readData(packet_.data);
-            packet_.dataLength = dataLength;
+            radio_.readData(packet_.data_);
+            packet_.dataLength_ = dataLength;
             dataReceived_ = true;
         }
     }
@@ -79,8 +79,8 @@ class tHALRadioTX : public tHALRadioBase {
     {
         return radio_.send(
                    RADIO_ID,
-                   const_cast<void *>(static_cast<const void *>(packet.data)),
-                   packet.dataLength, NRFLite::REQUIRE_ACK) != 0;
+                   const_cast<void *>(static_cast<const void *>(packet.data_)),
+                   packet.dataLength_, NRFLite::REQUIRE_ACK) != 0;
     }
 };
 
