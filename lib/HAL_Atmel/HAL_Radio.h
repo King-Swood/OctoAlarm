@@ -22,7 +22,7 @@ class tRadio {
   public:
     tRadio()
     {
-        if (_radio.init(RADIO_ID, PIN_RADIO_CE, PIN_RADIO_CSN)) {
+        if (radio_.init(RADIO_ID, PIN_RADIO_CE, PIN_RADIO_CSN)) {
             open_ = true;
         }
     }
@@ -30,17 +30,17 @@ class tRadio {
     bool IsOpen() const { return open_; }
 
   protected:
-    const static uint8_t RADIO_ID =
-        0; // Our radio's id.  The transmitter will send to this id.
+    // Our radio's id.
+    const static uint8_t RADIO_ID = 87;
     const static uint8_t PIN_RADIO_CE = 9;
     const static uint8_t PIN_RADIO_CSN = 10;
 
-    NRFLite _radio;
+    NRFLite radio_;
     bool open_{};
 };
 
 class tRadioRX : private tRadio {
-    tRadioRX() { _radio.startRx(); }
+    tRadioRX() { radio_.startRx(); }
 
     void Update()
     {
@@ -48,10 +48,10 @@ class tRadioRX : private tRadio {
             return;
         }
 
-        auto dataLength = _radio.hasData();
+        auto dataLength = radio_.hasData();
 
         if (dataLength > 0) {
-            _radio.readData(packet_.data);
+            radio_.readData(packet_.data);
             packet_.dataLength = dataLength;
             dataReceived_ = true;
         }
@@ -66,6 +66,18 @@ class tRadioRX : private tRadio {
   private:
     tRadioPacket packet_{};
     mutable bool dataReceived_{};
+};
+
+class tRadioTX : private tRadio {
+    tRadioTX() = default;
+
+    bool SendPacket(const tRadioPacket &packet)
+    {
+        return radio_.send(
+                   RADIO_ID,
+                   const_cast<void *>(static_cast<const void *>(packet.data)),
+                   packet.dataLength, NRFLite::REQUIRE_ACK) != 0;
+    }
 };
 
 /*

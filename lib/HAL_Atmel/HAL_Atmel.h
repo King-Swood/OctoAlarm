@@ -8,7 +8,7 @@ using tTimeUnsigned = unsigned long;
 namespace Private {
 
 static const int AnalogOutputPins[] = {
-    8 // AlarmLED
+    6 // AlarmLED
 };
 static_assert(ArrayItemCount(AnalogOutputPins, int) == AnalogOutputSize);
 
@@ -24,7 +24,7 @@ static_assert(ArrayItemCount(DigitalInputPins, tInput) == DigitalInputSize);
 
 // Not connected, as the onboard LED shares a pin with SCLK.
 static const int DigitalOutputPins[] = {
-    6 // HeartbeatLED
+    8 // HeartbeatLED
 };
 static_assert(ArrayItemCount(DigitalOutputPins, int) == DigitalOutputSize);
 
