@@ -1,6 +1,7 @@
 #pragma once
 // TODO: Remove unused includes.
 #include "HALTypes.h"
+#include "HAL_Radio.h"
 #include <array>
 #include <cassert>
 #include <chrono>
@@ -43,3 +44,15 @@ bool HALDigitalRead(eDigitalInput input);
 void HALAnalogWrite(eAnalogOutput output, uint8_t value);
 void HALToneStop();
 void HALToneStart(unsigned long frequency);
+
+static inline tHALRadioRX &HALRadioRXInstance()
+{
+    static tHALRadioRX instance;
+    return instance;
+}
+
+static inline tHALRadioTX &HALRadioTXInstance()
+{
+    static tHALRadioTX instance;
+    return instance;
+}
