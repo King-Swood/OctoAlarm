@@ -1,7 +1,16 @@
+#include "PatternProcessor.h"
+#if RF_RECEIVER
 #include "AppAlarm.h"
+#else
+#include "AppRemote.h"
+#endif
 
 namespace {
-tAppAlarm appAlarm{};
+#if RF_RECEIVER
+tAppAlarm app{};
+#else
+tAppRemote app{};
+#endif
 
 void StartupPatternBlocking()
 {
@@ -45,4 +54,4 @@ void setup()
     StartupPatternBlocking();
 }
 
-void loop() { appAlarm.Update(); }
+void loop() { app.Update(); }

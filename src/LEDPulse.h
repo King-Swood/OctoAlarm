@@ -13,6 +13,7 @@ template <eAnalogOutput Output, long unsigned UpdatePeriodUS> class tLEDPulse {
         stop_ = true;
         constantPWMValue_ = pwmValue;
     }
+    bool IsPausedOff() const { return state_ == eState::PauseOff; }
 
     void Update()
     {

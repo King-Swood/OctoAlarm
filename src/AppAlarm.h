@@ -3,7 +3,6 @@
 #include "HAL.h"
 #include "Heartbeat.h"
 #include "LEDPulse.h"
-#include "PatternProcessor.h"
 #include "Radio.h"
 #include "Siren.h"
 #include "Theme.h"
