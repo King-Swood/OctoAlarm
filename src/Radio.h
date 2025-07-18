@@ -25,9 +25,11 @@ class tRadioTX {
 
 class tRadioRX {
   public:
+    bool CommandReceived() const { return commandReceived_; }
     void Update()
     {
         const auto &radio = HALRadioRXInstance();
+        commandReceived_ = false;
 
         if (!firstPassComplete_) {
             if (!radio.IsOpen()) {
@@ -38,11 +40,15 @@ class tRadioRX {
 
         if (radio.IsOpen() && radio.DataReceived()) {
             const auto packet = radio.GetPacket();
+            // TODO: Need to actually parse the packet to make sure the command
+            // is correct.
             HALConsolePrint(packet.String());
             HALConsolePrint("\n");
+            commandReceived_ = true;
         }
     }
 
   private:
     bool firstPassComplete_{};
+    bool commandReceived_{};
 };

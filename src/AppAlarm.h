@@ -35,7 +35,7 @@ class tAppAlarm {
             if (button.JustReleased()) {
                 state_ = eState::Alarming;
             }
-            else if (button.IsHeld(ButtonHoldMS)) {
+            else if (button.IsHeld(ButtonHoldMS) || radio.CommandReceived()) {
                 state_ = eState::Theme;
             }
             break;
