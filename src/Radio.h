@@ -1,5 +1,7 @@
 #include "HAL.h"
 
+static inline const char *PacketString = "ring doorbell";
+
 class tRadioTX {
   public:
     bool SendCommand()
@@ -11,7 +13,7 @@ class tRadioTX {
         }
 
         auto result =
-            HALRadioTXInstance().SendPacket(tRadioPacket{"ring doorbell"});
+            HALRadioTXInstance().SendPacket(tRadioPacket{PacketString});
         if (!result) {
             HALConsolePrint(
                 "Radio failed to send command or didn't receive ACK\n");
@@ -28,23 +30,28 @@ class tRadioRX {
     bool CommandReceived() const { return commandReceived_; }
     void Update()
     {
-        const auto &radio = HALRadioRXInstance();
+        auto &radio = HALRadioRXInstance();
         commandReceived_ = false;
 
         if (!firstPassComplete_) {
             if (!radio.IsOpen()) {
                 HALConsolePrint("Radio didn't initialise properly\n");
+                return;
             }
             firstPassComplete_ = true;
         }
 
+        radio.Update();
+
         if (radio.IsOpen() && radio.DataReceived()) {
             const auto packet = radio.GetPacket();
-            // TODO: Need to actually parse the packet to make sure the command
-            // is correct.
-            HALConsolePrint(packet.String());
-            HALConsolePrint("\n");
-            commandReceived_ = true;
+            if (strncmp(packet.String(), PacketString, strlen(PacketString)) ==
+                0) {
+                commandReceived_ = true;
+            }
+            else {
+                HALConsolePrint("Unknown command received\n");
+            }
         }
     }
 

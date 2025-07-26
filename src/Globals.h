@@ -3,7 +3,7 @@
 
 class Globals {
   public:
-    static constexpr auto Version = "1.000";
+    static constexpr auto Version = "1.001";
 };
 
 #define ArrayItemCount(a, item) (sizeof(a) / sizeof(item))
